@@ -1,130 +1,24 @@
+// Mobile navigation
+document.querySelectorAll(".menu-toggle").forEach(button=>button.addEventListener("click",()=>{const nav=document.querySelector(".nav");nav.classList.toggle("open");button.textContent=nav.classList.contains("open")?"✕":"☰";}));
 
-const topicsByClass = {
-  "JSS 1": [
-    ["🔢", "Number Bases", "Understand numbers and place values."],
-    ["➕", "Basic Operations", "Addition, subtraction, multiplication and division."],
-    ["📐", "Basic Geometry", "Lines, angles and shapes."],
-    ["📊", "Statistics", "Collect and interpret simple data."],
-    ["🍕", "Fractions", "Learn fractions, decimals and percentages."],
-    ["✖️", "Introduction to Algebra", "Understand letters and simple expressions."]
-  ],
-  "JSS 2": [
-    ["✖️", "Algebraic Expressions", "Simplify and evaluate expressions."],
-    ["📐", "Angles and Polygons", "Explore angles and geometric figures."],
-    ["📈", "Graphs", "Read and interpret graphs."],
-    ["🔢", "Integers", "Work with positive and negative numbers."],
-    ["📏", "Mensuration", "Perimeter, area and volume."],
-    ["📊", "Statistics", "Mean, median and mode."]
-  ],
-  "JSS 3": [
-    ["🧮", "Linear Equations", "Solve equations step by step."],
-    ["📉", "Quadratic Expressions", "Explore quadratic expressions."],
-    ["📐", "Trigonometry", "Learn basic trigonometric ratios."],
-    ["📊", "Probability", "Understand chance and probability."],
-    ["📈", "Graphs of Functions", "Plot and interpret graphs."],
-    ["📏", "Geometry", "Study circles and geometric theorems."]
-  ]
+// Class-based topic catalogue
+const topics={
+"JSS 1":[["🔢","Number Bases","Understand place value and number representation."],["➕","Basic Operations","Addition, subtraction, multiplication and division."],["📐","Basic Geometry","Lines, angles and simple shapes."],["🍕","Fractions and Decimals","Parts of a whole and decimal notation."],["✖️","Introduction to Algebra","Use letters to represent unknown values."],["📊","Introduction to Statistics","Collect and interpret simple data."]],
+"JSS 2":[["✖️","Algebraic Expressions","Simplify expressions and collect like terms."],["📐","Angles and Polygons","Explore angle relationships and polygons."],["📈","Graphs","Read, plot and interpret graphs."],["🔢","Integers","Work with positive and negative numbers."],["📏","Mensuration","Explore perimeter, area and volume."],["📊","Statistics","Find mean, median and mode."]],
+"JSS 3":[["🧮","Linear Equations","Solve equations using balanced steps."],["📉","Quadratic Expressions","Explore quadratic expressions and patterns."],["📐","Trigonometry","Meet sine, cosine and tangent ratios."],["🎲","Probability","Describe and calculate chance."],["📈","Graphs of Functions","Plot and interpret relationships."],["📏","Geometry","Explore circles and geometric properties."]]
 };
+const classSelect=document.getElementById("classSelect"),lessonGrid=document.getElementById("lessonGrid");
+function renderLessons(){if(!classSelect||!lessonGrid)return;const cls=classSelect.value;document.getElementById("classSummary").textContent="Showing starter topics for "+cls;lessonGrid.innerHTML=topics[cls].map((t,i)=>`<article class="lesson-card" style="animation-delay:${i*60}ms"><span class="lesson-symbol">${t[0]}</span><h3>${t[1]}</h3><p>${t[2]}</p><small>Explore topic ↗</small></article>`).join("");}
+if(classSelect){classSelect.addEventListener("change",renderLessons);renderLessons();}
 
-const classSelect = document.getElementById("classSelect");
-const topicsContainer = document.getElementById("topics");
+// Demonstration tutor: sample responses only, not a live AI service.
+const form=document.getElementById("chatForm"),input=document.getElementById("question"),messages=document.getElementById("messages");
+function say(text,who){const el=document.createElement("div");el.className="chat-bubble "+who;el.textContent=text;messages.appendChild(el);messages.scrollTop=messages.scrollHeight;}
+function answer(q){q=q.toLowerCase();if(q.includes("2x + 3 = 11")||q.includes("2x+3=11"))return "Let's solve 2x + 3 = 11.\\n\\nStep 1: Subtract 3 from both sides.\\n2x = 11 - 3 = 8.\\n\\nStep 2: Divide both sides by 2.\\nx = 8 ÷ 2 = 4.\\n\\nAnswer: x = 4. Check: 2(4) + 3 = 11. Well done!";if(q.includes("fraction"))return "A fraction represents part of a whole. For example, 1/2 means one of two equal parts.\\n\\nTry: what is 1/2 + 1/2?";if(q.includes("mean"))return "The mean is the average. For 2, 4 and 6: add them (12), then divide by 3. The mean is 4.";if(q.includes("algebra"))return "Algebra uses letters for unknown numbers. Example: x + 3 = 7. Subtract 3 from both sides: x = 4.";return "Good question! This prototype has a few built-in sample explanations, not a live AI connection yet. Try: solve 2x + 3 = 11; explain fractions; or explain the mean. A live AI tutor is a later development stage.";}
+if(form){form.addEventListener("submit",e=>{e.preventDefault();const q=input.value.trim();if(!q)return;say(q,"user");input.value="";setTimeout(()=>say(answer(q),"bot"),300);});document.querySelectorAll("[data-prompt]").forEach(b=>b.addEventListener("click",()=>{input.value=b.dataset.prompt;input.focus();}));document.getElementById("clearChat").addEventListener("click",()=>messages.innerHTML='<div class="welcome"><b>Fresh page, fresh thinking! ✨</b><p>What maths question shall we explore?</p></div>');const voice=document.getElementById("voiceBtn"),status=document.getElementById("voiceStatus"),SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(SR){const rec=new SR();rec.lang="en-NG";voice.addEventListener("click",()=>{status.textContent="Listening…";try{rec.start()}catch(e){status.textContent="Please try again."}});rec.onresult=e=>{input.value=e.results[0][0].transcript;status.textContent="Voice captured. Press send."};rec.onerror=()=>status.textContent="Voice input unavailable; type instead.";}else{voice.disabled=true;status.textContent="Voice input is not supported in this browser."}}
 
-function showTopics() {
-  const selectedClass = classSelect.value;
-  const topics = topicsByClass[selectedClass];
-
-  topicsContainer.innerHTML = topics.map(topic => `
-    <article class="topic-card">
-      <div class="topic-icon">${topic[0]}</div>
-      <h3>${topic[1]}</h3>
-      <p>${topic[2]}</p>
-    </article>
-  `).join("");
-}
-
-classSelect.addEventListener("change", showTopics);
-showTopics();
-
-const chatForm = document.getElementById("chatForm");
-const questionInput = document.getElementById("question");
-const messages = document.getElementById("messages");
-
-function addMessage(text, sender) {
-  const bubble = document.createElement("div");
-  bubble.className = "bubble " + sender;
-  bubble.textContent = text;
-  messages.appendChild(bubble);
-  messages.scrollTop = messages.scrollHeight;
-}
-
-function getMathAnswer(question) {
-  const q = question.toLowerCase().replace(/[?]/g, "").trim();
-
-  if (q.includes("2x + 3 = 11") || q.includes("2x+3=11")) {
-    return "Let's solve 2x + 3 = 11.\n\nStep 1: Subtract 3 from both sides.\n2x = 11 - 3\n2x = 8\n\nStep 2: Divide both sides by 2.\nx = 8 ÷ 2\n\nAnswer: x = 4.\n\nWell done! Try substituting 4 into the original equation to check your answer.";
-  }
-
-  if (q.includes("fraction")) {
-    return "A fraction represents part of a whole.\n\nFor example, 1/2 means one part out of two equal parts.\n\nTry this: What is 1/2 + 1/2?";
-  }
-
-  if (q.includes("mean")) {
-    return "The mean is the average of a group of numbers.\n\nExample: 2, 4 and 6.\n\nStep 1: Add the numbers: 2 + 4 + 6 = 12.\nStep 2: Divide by how many numbers there are: 12 ÷ 3 = 4.\n\nThe mean is 4.";
-  }
-
-  if (q.includes("algebra")) {
-    return "Algebra uses letters to represent unknown numbers.\n\nExample: x + 3 = 7.\n\nSubtract 3 from both sides:\nx = 7 - 3\n\nTherefore, x = 4.";
-  }
-
-  return "Thanks for your question! I am currently running in demonstration mode, so I can explain a few sample Mathematics topics.\n\nTry asking:\n• How do I solve 2x + 3 = 11?\n• What is a fraction?\n• Explain mean in Mathematics.\n• What is algebra?\n\nA live AI connection will be added in a later development stage.";
-}
-
-chatForm.addEventListener("submit", function(event) {
-  event.preventDefault();
-
-  const question = questionInput.value.trim();
-  if (!question) return;
-
-  addMessage(question, "user");
-  questionInput.value = "";
-
-  setTimeout(() => {
-    addMessage(getMathAnswer(question), "bot");
-  }, 500);
-});
-
-const voiceBtn = document.getElementById("voiceBtn");
-const voiceStatus = document.getElementById("voiceStatus");
-
-const SpeechRecognition =
-  window.SpeechRecognition || window.webkitSpeechRecognition;
-
-if (SpeechRecognition) {
-  const recognition = new SpeechRecognition();
-  recognition.lang = "en-NG";
-  recognition.continuous = false;
-  recognition.interimResults = false;
-
-  voiceBtn.addEventListener("click", function() {
-    voiceStatus.textContent = "Listening... Speak now.";
-    recognition.start();
-  });
-
-  recognition.onresult = function(event) {
-    questionInput.value = event.results[0][0].transcript;
-    voiceStatus.textContent = "Voice captured. Press Send.";
-  };
-
-  recognition.onerror = function() {
-    voiceStatus.textContent = "Voice input failed. Please try typing.";
-  };
-
-  recognition.onend = function() {
-    if (voiceStatus.textContent === "Listening... Speak now.") {
-      voiceStatus.textContent = "Voice input ended.";
-    }
-  };
-} else {
-  voiceBtn.disabled = true;
-  voiceStatus.textContent = "Voice input is not supported in this browser.";
-}
+// Three-question sample quiz
+const questions=[{q:"What is 7 × 8?",o:["54","56","64","48"],a:1,why:"7 × 8 = 56."},{q:"Solve: x + 5 = 12",o:["x = 5","x = 6","x = 7","x = 8"],a:2,why:"Subtract 5 from both sides: x = 12 − 5 = 7."},{q:"What is half of 3/4?",o:["3/8","2/4","3/2","1/4"],a:0,why:"Half of 3/4 is 1/2 × 3/4 = 3/8."}];
+let qi=0,score=0,chosen=false;const qTitle=document.getElementById("quizQuestion"),qOpts=document.getElementById("quizOptions"),qFeed=document.getElementById("quizFeedback"),next=document.getElementById("nextQuestion");
+function drawQuiz(){if(!qTitle)return;chosen=false;const q=questions[qi];document.getElementById("quizCount").textContent=`QUESTION ${qi+1} OF ${questions.length}`;document.getElementById("quizProgress").style.width=((qi+1)/questions.length*100)+"%";qTitle.textContent=q.q;qFeed.textContent="";next.disabled=true;next.textContent=qi===questions.length-1?"See my result →":"Next question →";qOpts.innerHTML=q.o.map((v,i)=>`<button class="quiz-option" data-index="${i}">${String.fromCharCode(65+i)}. ${v}</button>`).join("");qOpts.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{if(chosen)return;chosen=true;const n=Number(b.dataset.index);if(n===q.a){score++;b.classList.add("correct");qFeed.textContent="Correct! "+q.why;}else{b.classList.add("wrong");qOpts.children[q.a].classList.add("correct");qFeed.textContent="Not quite. "+q.why;}next.disabled=false;}));}
+if(qTitle){drawQuiz();next.addEventListener("click",()=>{if(qi<questions.length-1){qi++;drawQuiz()}else{qTitle.textContent=`You scored ${score} out of ${questions.length}!`;qOpts.innerHTML="";qFeed.textContent=score===3?"Fantastic work! Keep that momentum going.":"Good effort! Review a topic and give it another try.";next.textContent="Try again ↻";next.disabled=false;next.onclick=()=>{qi=0;score=0;next.onclick=null;drawQuiz();}}});}
