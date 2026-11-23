@@ -1,0 +1,100 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MathLearn AI | Learn Mathematics</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <a class="brand" href="#"><span class="logo">∑</span> MathLearn <b>AI</b></a>
+  <nav>
+    <a href="#learn">Learning</a>
+    <a href="#tutor">AI Tutor</a>
+    <a href="#about">About</a>
+  </nav>
+  <a class="navbtn" href="#learn">Start Learning</a>
+</header>
+
+<main>
+<section class="hero">
+  <div class="hero-copy">
+    <span class="eyebrow">SMARTER MATHEMATICS LEARNING</span>
+    <h1>Mathematics made <em>clearer.</em></h1>
+    <p>Explore JSS Mathematics topics, practise at your pace and get guided explanations with your learning companion.</p>
+    <div class="actions">
+      <a class="primary" href="#learn">Explore Lessons</a>
+      <a class="secondary" href="#tutor">Meet Your AI Tutor ↗</a>
+    </div>
+    <div class="trust">
+      <span>✓ JSS 1–3 Topics</span>
+      <span>✓ Learn Step by Step</span>
+    </div>
+  </div>
+  <div class="hero-art">
+    <div class="orb">∑</div>
+    <div class="float-card one">📐 <span><b>Geometry</b><small>Shapes & space</small></span></div>
+    <div class="float-card two">✏️ <span><b>Practice time</b><small>Build confidence</small></span></div>
+    <div class="formula">y = mx + c</div>
+  </div>
+</section>
+
+<section id="learn" class="section">
+  <div class="section-head">
+    <div>
+      <span class="eyebrow">YOUR CLASSROOM</span>
+      <h2>Choose Your Class</h2>
+      <p>Choose a class to explore Mathematics topics.</p>
+    </div>
+    <select id="classSelect">
+      <option value="JSS 1">JSS 1</option>
+      <option value="JSS 2">JSS 2</option>
+      <option value="JSS 3">JSS 3</option>
+    </select>
+  </div>
+  <div id="topics" class="topic-grid"></div>
+</section>
+
+<section id="tutor" class="section tutor-section">
+  <div class="tutor-intro">
+    <span class="eyebrow">YOUR STUDY COMPANION</span>
+    <h2>Ask. Understand. Practise.</h2>
+    <p>Ask a Mathematics question and explore step-by-step explanations.</p>
+    <div class="notice">🔒 Do not enter personal or sensitive information in this demo.</div>
+  </div>
+
+  <div class="chat">
+    <div class="chat-head">
+      <span class="avatar">∑</span>
+      <span><b>MathLearn Tutor</b><small>Learning assistant · Demo</small></span>
+      <span class="online"></span>
+    </div>
+    <div id="messages" class="messages">
+      <div class="bubble bot">Hello! 👋 Welcome to MathLearn AI. Ask me a Mathematics question. Try: How do I solve 2x + 3 = 11?</div>
+    </div>
+    <form id="chatForm" class="chat-form">
+      <input id="question" placeholder="Type a Mathematics question..." required>
+      <button type="submit">Send ↑</button>
+    </form>
+    <div class="chat-tools">
+      <button id="voiceBtn" type="button">🎙 Voice Input</button>
+      <span id="voiceStatus">Voice input depends on browser support.</span>
+    </div>
+  </div>
+</section>
+
+<section id="about" class="bottom-cta">
+  <span class="eyebrow">LEARN WITH CONFIDENCE</span>
+  <h2>Every great mathematician starts with one question.</h2>
+  <a class="primary" href="#learn">Choose a Topic</a>
+</section>
+</main>
+
+<footer>© 2026 MathLearn AI · Mathematics Learning for JSS 1–3</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
