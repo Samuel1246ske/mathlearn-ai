@@ -165,6 +165,30 @@ const qFeed = document.getElementById("quizFeedback");
 const next = document.getElementById("nextQuestion");
 
 async function saveQuizAttempt(finalScore) {
+
+  if (!lessonClient) {
+    throw new Error("Supabase connection is unavailable.");
+  }
+
+  const { data: { user }, error: userError } =
+    await lessonClient.auth.getUser();
+
+  if (userError) throw userError;
+
+  if (!user) {
+    throw new Error("Please log in to save your quiz score.");
+  }
+
+  const { error } = await lessonClient
+    .from("quiz_attempts")
+    .insert({
+      student_id: user.id,
+      score: finalScore,
+      total_questions: questions.length
+    });
+
+  if (error) throw error;
+}
   const SUPABASE_URL = "https://cnqjpzjdhascrjouzynu.supabase.co";
 
   const SUPABASE_KEY = "sb_publishable_34w3u5w8U6IgNJlFZGRL8A_UHAdNEXD";
