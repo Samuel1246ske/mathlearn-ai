@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Account | MathLearn AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'DM Sans', sans-serif;
+      background: #f5f3ff;
+      color: #202044;
+    }
+    header {
+      background: white;
+      padding: 18px 7%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 12px #25204a0d;
+    }
+    .logo {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: #6845d5;
+      text-decoration: none;
+    }
+    header a.back { color: #5942b8; text-decoration: none; font-weight: 600; }
+    main {
+      max-width: 480px;
+      margin: 55px auto;
+      padding: 0 18px;
+    }
+    .card {
+      background: white;
+      padding: 30px;
+      border-radius: 22px;
+      box-shadow: 0 15px 45px #33247712;
+    }
+    h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 29px;
+      margin: 0 0 8px;
+    }
+    .intro { color: #77758d; margin: 0 0 25px; line-height: 1.6; }
+    .tabs { display: flex; gap: 8px; background: #f1effb; padding: 5px; border-radius: 12px; margin-bottom: 24px; }
+    .tabs button {
+      flex: 1; border: 0; padding: 12px; border-radius: 9px;
+      font: inherit; font-weight: 700; cursor: pointer;
+      background: transparent; color: #77758d;
+    }
+    .tabs button.active { background: white; color: #6845d5; box-shadow: 0 2px 8px #2222220c; }
+    label { display: block; font-weight: 600; font-size: 14px; margin: 16px 0 7px; }
+    input, select {
+      width: 100%; padding: 13px 14px; border: 1px solid #dedbea;
+      border-radius: 10px; font: inherit; outline: none; background: white;
+    }
+    input:focus, select:focus { border-color: #7958df; box-shadow: 0 0 0 3px #7958df18; }
+    .submit {
+      width: 100%; border: 0; border-radius: 11px; padding: 14px;
+      margin-top: 23px; background: #6845d5; color: white;
+      font: inherit; font-weight: 700; cursor: pointer;
+    }
+    .submit:disabled { opacity: .6; cursor: wait; }
+    #message { margin-top: 17px; font-size: 14px; line-height: 1.5; }
+    .note { font-size: 12px; color: #858298; line-height: 1.5; margin-top: 18px; }
+    .hidden { display: none; }
+    @media(max-width: 500px) {
+      main { margin: 30px auto; }
+      .card { padding: 23px; }
+    }
+  </style>
+</head>
+
+<body>
+<header>
+  <a class="logo" href="index.html">MathLearn AI</a>
+  <a class="back" href="index.html">← Home</a>
+</header>
+
+<main>
+  <section class="card">
+    <h1 id="heading">Create your account</h1>
+    <p class="intro" id="intro">Join MathLearn AI and make learning Mathematics easier and more exciting.</p>
+
+    <div class="tabs">
+      <button class="active" id="signupTab" type="button">Sign Up</button>
+      <button id="loginTab" type="button">Log In</button>
+    </div>
+
+    <form id="signupForm">
+      <label for="fullName">Full name</label>
+      <input id="fullName" type="text" placeholder="Enter your full name" required>
+
+      <label for="classLevel">Class</label>
+      <select id="classLevel" required>
+        <option value="">Select your class</option>
+        <option value="JSS 1">JSS 1</option>
+        <option value="JSS 2">JSS 2</option>
+        <option value="JSS 3">JSS 3</option>
+      </select>
+
+      <label for="signupEmail">Email address</label>
+      <input id="signupEmail" type="email" placeholder="you@example.com" required>
+
+      <label for="signupPassword">Password</label>
+      <input id="signupPassword" type="password" minlength="8" placeholder="At least 8 characters" required>
+
+      <button class="submit" type="submit">Create Account</button>
+    </form>
+
+    <form id="loginForm" class="hidden">
+      <label for="loginEmail">Email address</label>
+      <input id="loginEmail" type="email" placeholder="you@example.com" required>
+
+      <label for="loginPassword">Password</label>
+      <input id="loginPassword" type="password" placeholder="Enter your password" required>
+
+      <button class="submit" type="submit">Log In</button>
+    </form>
+
+    <div id="message" role="status"></div>
+    <p class="note">Please use this learning account with the appropriate parent or guardian's knowledge and permission. We only ask for the information needed to support learning.</p>
+  </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+  const SUPABASE_URL = "https://cnqjpzjdhascrjouzynu.supabase.co";
+  const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_34w3u5w8U6IgNJlFZGRL8A_UHAdNEXD";
+
+  const client = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY
+  );
+
+  const signupForm = document.getElementById("signupForm");
+  const loginForm = document.getElementById("loginForm");
+  const message = document.getElementById("message");
+
+  function showMessage(text, success = false) {
+    message.textContent = text;
+    message.style.color = success ? "#16834a" : "#c03950";
+  }
+
+  document.getElementById("signupTab").addEventListener("click", () => {
+    signupForm.classList.remove("hidden");
+    loginForm.classList.add("hidden");
+    document.getElementById("signupTab").classList.add("active");
+    document.getElementById("loginTab").classList.remove("active");
+    document.getElementById("heading").textContent = "Create your account";
+    document.getElementById("intro").textContent = "Join MathLearn AI and make learning Mathematics easier and more exciting.";
+    showMessage("");
+  });
+
+  document.getElementById("loginTab").addEventListener("click", () => {
+    signupForm.classList.add("hidden");
+    loginForm.classList.remove("hidden");
+    document.getElementById("loginTab").classList.add("active");
+    document.getElementById("signupTab").classList.remove("active");
+    document.getElementById("heading").textContent = "Welcome back";
+    document.getElementById("intro").textContent = "Log in to continue your Mathematics learning journey.";
+    showMessage("");
+  });
+
+  signupForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const button = signupForm.querySelector("button");
+    button.disabled = true;
+    button.textContent = "Creating account...";
+    showMessage("");
+
+    const fullName = document.getElementById("fullName").value.trim();
+    const classLevel = document.getElementById("classLevel").value;
+    const email = document.getElementById("signupEmail").value.trim();
+    const password = document.getElementById("signupPassword").value;
+
+    try {
+      const { data, error } = await client.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: window.location.origin + "/mathlearn-ai/",
+          data: {
+            full_name: fullName,
+            class_level: classLevel
+          }
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.session) {
+        showMessage("Account created successfully! You can now log in.", true);
+      } else {
+        showMessage("Account created. Please check your email for the confirmation link before logging in.", true);
+      }
+
+      signupForm.reset();
+    } catch (error) {
+      showMessage(error.message);
+    } finally {
+      button.disabled = false;
+      button.textContent = "Create Account";
+    }
+  });
+
+  loginForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const button = loginForm.querySelector("button");
+    button.disabled = true;
+    button.textContent = "Logging in...";
+    showMessage("");
+
+    const email = document.getElementById("loginEmail").value.trim();
+    const password = document.getElementById("loginPassword").value;
+
+    try {
+      const { data, error } = await client.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) throw error;
+
+      showMessage("Login successful! Welcome to MathLearn AI.", true);
+      loginForm.reset();
+    } catch (error) {
+      showMessage(error.message);
+    } finally {
+      button.disabled = false;
+      button.textContent = "Log In";
+    }
+  });
+</script>
+</body>
+</html>
