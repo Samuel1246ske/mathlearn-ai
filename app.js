@@ -1,22 +1,138 @@
 // Mobile navigation
 document.querySelectorAll(".menu-toggle").forEach(button=>button.addEventListener("click",()=>{const nav=document.querySelector(".nav");nav.classList.toggle("open");button.textContent=nav.classList.contains("open")?"✕":"☰";}));
 
-// Class-based topic catalogue
-const topics={
-"JSS 1":[["🔢","Number Bases","Understand place value and number representation."],["➕","Basic Operations","Addition, subtraction, multiplication and division."],["📐","Basic Geometry","Lines, angles and simple shapes."],["🍕","Fractions and Decimals","Parts of a whole and decimal notation."],["✖️","Introduction to Algebra","Use letters to represent unknown values."],["📊","Introduction to Statistics","Collect and interpret simple data."]],
-"JSS 2":[["✖️","Algebraic Expressions","Simplify expressions and collect like terms."],["📐","Angles and Polygons","Explore angle relationships and polygons."],["📈","Graphs","Read, plot and interpret graphs."],["🔢","Integers","Work with positive and negative numbers."],["📏","Mensuration","Explore perimeter, area and volume."],["📊","Statistics","Find mean, median and mode."]],
-"JSS 3":[["🧮","Linear Equations","Solve equations using balanced steps."],["📉","Quadratic Expressions","Explore quadratic expressions and patterns."],["📐","Trigonometry","Meet sine, cosine and tangent ratios."],["🎲","Probability","Describe and calculate chance."],["📈","Graphs of Functions","Plot and interpret relationships."],["📏","Geometry","Explore circles and geometric properties."]]
-};
-const classSelect=document.getElementById("classSelect"),lessonGrid=document.getElementById("lessonGrid");
-function renderLessons(){if(!classSelect||!lessonGrid)return;const cls=classSelect.value;document.getElementById("classSummary").textContent="Showing starter topics for "+cls;lessonGrid.innerHTML=topics[cls].map((t,i)=>`<article class="lesson-card" style="animation-delay:${i*60}ms"><span class="lesson-symbol">${t[0]}</span><h3>${t[1]}</h3><p>${t[2]}</p><small>Explore topic ↗</small></article>`).join("");}
-if(classSelect){classSelect.addEventListener("change",renderLessons);renderLessons();}
+// Supabase-powered lessons and learning progress
 
-// Demonstration tutor: sample responses only, not a live AI service.
-const form=document.getElementById("chatForm"),input=document.getElementById("question"),messages=document.getElementById("messages");
-function say(text,who){const el=document.createElement("div");el.className="chat-bubble "+who;el.textContent=text;messages.appendChild(el);messages.scrollTop=messages.scrollHeight;}
-function answer(q){q=q.toLowerCase();if(q.includes("2x + 3 = 11")||q.includes("2x+3=11"))return "Let's solve 2x + 3 = 11.\\n\\nStep 1: Subtract 3 from both sides.\\n2x = 11 - 3 = 8.\\n\\nStep 2: Divide both sides by 2.\\nx = 8 ÷ 2 = 4.\\n\\nAnswer: x = 4. Check: 2(4) + 3 = 11. Well done!";if(q.includes("fraction"))return "A fraction represents part of a whole. For example, 1/2 means one of two equal parts.\\n\\nTry: what is 1/2 + 1/2?";if(q.includes("mean"))return "The mean is the average. For 2, 4 and 6: add them (12), then divide by 3. The mean is 4.";if(q.includes("algebra"))return "Algebra uses letters for unknown numbers. Example: x + 3 = 7. Subtract 3 from both sides: x = 4.";return "Good question! This prototype has a few built-in sample explanations, not a live AI connection yet. Try: solve 2x + 3 = 11; explain fractions; or explain the mean. A live AI tutor is a later development stage.";}
-if(form){form.addEventListener("submit",e=>{e.preventDefault();const q=input.value.trim();if(!q)return;say(q,"user");input.value="";setTimeout(()=>say(answer(q),"bot"),300);});document.querySelectorAll("[data-prompt]").forEach(b=>b.addEventListener("click",()=>{input.value=b.dataset.prompt;input.focus();}));document.getElementById("clearChat").addEventListener("click",()=>messages.innerHTML='<div class="welcome"><b>Fresh page, fresh thinking! ✨</b><p>What maths question shall we explore?</p></div>');const voice=document.getElementById("voiceBtn"),status=document.getElementById("voiceStatus"),SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(SR){const rec=new SR();rec.lang="en-NG";voice.addEventListener("click",()=>{status.textContent="Listening…";try{rec.start()}catch(e){status.textContent="Please try again."}});rec.onresult=e=>{input.value=e.results[0][0].transcript;status.textContent="Voice captured. Press send."};rec.onerror=()=>status.textContent="Voice input unavailable; type instead.";}else{voice.disabled=true;status.textContent="Voice input is not supported in this browser."}}
+const LESSONS_URL = "https://cnqjpzjdhascrjouzynu.supabase.co";
+const LESSONS_KEY = "sb_publishable_34w3u5w8U6IgNJlFZGRL8A_UHAdNEXD";
 
+const lessonClient = window.supabase.createClient(
+  LESSONS_URL,
+  LESSONS_KEY
+);
+
+const classSelect = document.getElementById("classSelect");
+const lessonGrid = document.getElementById("lessonGrid");
+const classSummary = document.getElementById("classSummary");
+
+async function renderLessons() {
+  if (!classSelect || !lessonGrid) return;
+
+  const selectedClass = classSelect.value.replace(/\s/g, "");
+
+  classSummary.textContent = "Loading your lessons...";
+  lessonGrid.innerHTML = "";
+
+  try {
+    const { data: lessons, error } = await lessonClient
+      .from("lessons")
+      .select("id, class_level, title, topic, content")
+      .eq("class_level", selectedClass)
+      .eq("published", true)
+      .order("title");
+
+    if (error) throw error;
+
+    if (!lessons || lessons.length === 0) {
+      classSummary.textContent = "No lessons available for this class yet.";
+      return;
+    }
+
+    const { data: { user } } = await lessonClient.auth.getUser();
+
+    let completedIds = [];
+
+    if (user) {
+      const { data: progress, error: progressError } =
+        await lessonClient
+          .from("learning_progress")
+          .select("lesson_id")
+          .eq("student_id", user.id)
+          .eq("completed", true);
+
+      if (progressError) throw progressError;
+
+      completedIds = progress.map(item => item.lesson_id);
+    }
+
+    classSummary.textContent =
+      `${lessons.length} Mathematics lessons available for ${classSelect.value}.`;
+
+    lessonGrid.innerHTML = lessons.map(lesson => {
+      const completed = completedIds.includes(lesson.id);
+
+      return `
+        <article class="lesson-card">
+          <span class="lesson-symbol">📘</span>
+          <h3>${lesson.title}</h3>
+          <p><strong>${lesson.topic}</strong></p>
+          <p>${lesson.content}</p>
+          <button
+            class="lesson-complete-btn"
+            data-lesson-id="${lesson.id}"
+            ${completed ? "disabled" : ""}
+            style="margin-top:15px;padding:10px 15px;border:0;border-radius:9px;background:${completed ? "#d9f5e5" : "#6845d5"};color:${completed ? "#176b3a" : "white"};cursor:pointer;">
+            ${completed ? "✓ Completed" : "Mark as completed"}
+          </button>
+        </article>
+      `;
+    }).join("");
+
+  } catch (error) {
+    classSummary.textContent = "Unable to load lessons: " + error.message;
+  }
+}
+
+if (classSelect) {
+  classSelect.addEventListener("change", renderLessons);
+  renderLessons();
+}
+
+if (lessonGrid) {
+  lessonGrid.addEventListener("click", async event => {
+    const button = event.target.closest(".lesson-complete-btn");
+
+    if (!button) return;
+
+    button.disabled = true;
+    button.textContent = "Saving...";
+
+    try {
+      const { data: { user }, error: authError } =
+        await lessonClient.auth.getUser();
+
+      if (authError) throw authError;
+
+      if (!user) {
+        alert("Please log in before marking a lesson as completed.");
+        window.location.href = "auth.html";
+        return;
+      }
+
+      const { error } = await lessonClient
+        .from("learning_progress")
+        .upsert({
+          student_id: user.id,
+          lesson_id: button.dataset.lessonId,
+          completed: true,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: "student_id,lesson_id"
+        });
+
+      if (error) throw error;
+
+      button.textContent = "✓ Completed";
+      button.style.background = "#d9f5e5";
+      button.style.color = "#176b3a";
+
+    } catch (error) {
+      alert("Could not save your progress: " + error.message);
+      button.disabled = false;
+      button.textContent = "Mark as completed";
+    }
+  });
+}
 // Three-question quiz connected to Supabase
 
 const questions = [
