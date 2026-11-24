@@ -231,8 +231,12 @@
 
       if (error) throw error;
 
-      showMessage("Login successful! Welcome to MathLearn AI.", true);
-      loginForm.reset();
+      showMessage("Login successful! Opening your dashboard...", true);
+loginForm.reset();
+
+setTimeout(() => {
+  window.location.href = "dashboard.html";
+}, 900);
     } catch (error) {
       showMessage(error.message);
     } finally {
