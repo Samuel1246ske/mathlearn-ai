@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Dashboard | MathLearn AI</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f6f5fc;color:#252344;font-family:'DM Sans',sans-serif}
+header{background:white;padding:17px 6%;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 15px #2221}
+.logo{font-family:'Space Grotesk';font-size:22px;font-weight:700;color:#6845d5;text-decoration:none}
+.logout{background:#fff0f1;color:#d34b60;border:0;padding:10px 16px;border-radius:9px;font-weight:700;cursor:pointer}
+main{max-width:1150px;margin:35px auto;padding:0 20px}
+.welcome{background:linear-gradient(120deg,#6845d5,#9270ef);color:white;padding:35px;border-radius:22px;position:relative;overflow:hidden}
+.welcome h1{font-family:'Space Grotesk';font-size:30px;margin:0 0 10px}
+.welcome p{margin:0;opacity:.9}
+.class-badge{display:inline-block;margin-top:20px;padding:8px 14px;background:#ffffff25;border-radius:30px}
+.section-title{font-family:'Space Grotesk';margin:35px 0 18px;font-size:23px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.card{background:white;padding:23px;border-radius:17px;text-decoration:none;color:#252344;box-shadow:0 5px 20px #29205a09;transition:.25s}
+.card:hover{transform:translateY(-5px);box-shadow:0 12px 25px #29205a16}
+.icon{font-size:30px;margin-bottom:14px}
+.card h3{margin:0 0 8px;font-family:'Space Grotesk'}
+.card p{margin:0;color:#77758c;font-size:14px;line-height:1.6}
+.card span{display:inline-block;margin-top:17px;color:#6845d5;font-weight:700;font-size:14px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin-top:25px}
+.stat{background:white;padding:20px;border-radius:15px}
+.stat strong{display:block;font-size:25px;color:#6845d5;font-family:'Space Grotesk'}
+.stat small{color:#77758c}
+.notice{background:#fff8e8;border:1px solid #f4e5bd;padding:15px;border-radius:12px;color:#806323;font-size:13px;margin-top:25px;line-height:1.5}
+#status{padding:15px;background:white;border-radius:12px;margin-bottom:18px;color:#6845d5}
+footer{text-align:center;padding:35px;color:#999;font-size:13px}
+@media(max-width:750px){.grid{grid-template-columns:1fr 1fr}.stats{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.grid,.stats{grid-template-columns:1fr}.welcome{padding:26px}.welcome h1{font-size:25px}}
+</style>
+</head>
+<body>
+
+<header>
+<a href="index.html" class="logo">MathLearn AI</a>
+<button class="logout" id="logoutBtn">Log Out ↗</button>
+</header>
+
+<main>
+<div id="status">Checking your student account...</div>
+
+<section class="welcome">
+<h1>Welcome, <span id="studentName">Student</span>! 👋</h1>
+<p>Ready to make Mathematics easier and more exciting today?</p>
+<div class="class-badge" id="studentClass">Your class</div>
+</section>
+
+<h2 class="section-title">Your Learning Space</h2>
+
+<section class="grid">
+<a href="lessons.html" class="card">
+<div class="icon">📚</div>
+<h3>My Lessons</h3>
+<p>Explore Mathematics topics and learn step by step.</p>
+<span>Explore lessons →</span>
+</a>
+
+<a href="tutor.html" class="card">
+<div class="icon">🤖</div>
+<h3>AI Mathematics Tutor</h3>
+<p>Ask Mathematics questions and get helpful explanations.</p>
+<span>Meet your tutor →</span>
+</a>
+
+<a href="practice.html" class="card">
+<div class="icon">✍️</div>
+<h3>Practice & Quiz</h3>
+<p>Test your knowledge with Mathematics exercises.</p>
+<span>Start practising →</span>
+</a>
+
+<a href="lessons.html" class="card">
+<div class="icon">🎯</div>
+<h3>Learning Topics</h3>
+<p>Find topics suitable for your JSS class.</p>
+<span>View topics →</span>
+</a>
+
+<div class="card">
+<div class="icon">📈</div>
+<h3>My Progress</h3>
+<p>Your learning statistics and quiz performance will appear here.</p>
+<span>Coming soon</span>
+</div>
+
+<div class="card">
+<div class="icon">🏆</div>
+<h3>Achievements</h3>
+<p>Keep practising and work towards your learning goals.</p>
+<span>Coming soon</span>
+</div>
+</section>
+
+<h2 class="section-title">Your Learning Overview</h2>
+
+<section class="stats">
+<div class="stat"><strong id="lessonCount">0</strong><small>Lessons completed</small></div>
+<div class="stat"><strong id="quizCount">0</strong><small>Quizzes attempted</small></div>
+<div class="stat"><strong id="averageScore">0%</strong><small>Average quiz score</small></div>
+</section>
+
+<div class="notice">
+🔒 Your learning account is personal. Always protect your password and use your account with appropriate parent or guardian permission.
+</div>
+</main>
+
+<footer>© 2026 MathLearn AI · Learn Mathematics. Build Confidence.</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL="https://cnqjpzjdhascrjouzynu.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_34w3u5w8U6IgNJlFZGRL8A_UHAdNEXD";
+
+const client=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+
+async function loadDashboard(){
+  const status=document.getElementById("status");
+
+  try{
+    const {data:{session},error:sessionError}=await client.auth.getSession();
+
+    if(sessionError) throw sessionError;
+
+    if(!session){
+      window.location.href="auth.html";
+      return;
+    }
+
+    const {data:profile,error:profileError}=await client
+      .from("profiles")
+      .select("full_name,class_level")
+      .eq("id",session.user.id)
+      .maybeSingle();
+
+    if(profileError) throw profileError;
+
+    document.getElementById("studentName").textContent=
+      profile?.full_name || session.user.user_metadata?.full_name || "Student";
+
+    document.getElementById("studentClass").textContent=
+      profile?.class_level || session.user.user_metadata?.class_level || "Class not selected";
+
+    const {data:progress,error:progressError}=await client
+      .from("learning_progress")
+      .select("id")
+      .eq("student_id",session.user.id)
+      .eq("completed",true);
+
+    if(progressError) throw progressError;
+
+    const {data:attempts,error:attemptError}=await client
+      .from("quiz_attempts")
+      .select("score,total_questions")
+      .eq("student_id",session.user.id);
+
+    if(attemptError) throw attemptError;
+
+    const quizTotal=attempts?.length || 0;
+    let average=0;
+
+    if(quizTotal){
+      const totalPercent=attempts.reduce((sum,item)=>{
+        return sum+(item.total_questions>0?(item.score/item.total_questions)*100:0);
+      },0);
+      average=Math.round(totalPercent/quizTotal);
+    }
+
+    document.getElementById("lessonCount").textContent=progress?.length || 0;
+    document.getElementById("quizCount").textContent=quizTotal;
+    document.getElementById("averageScore").textContent=average+"%";
+
+    status.textContent="✓ Your student account is connected successfully.";
+  }catch(error){
+    status.textContent="Unable to load your dashboard: "+error.message;
+  }
+}
+
+document.getElementById("logoutBtn").addEventListener("click",async()=>{
+  const {error}=await client.auth.signOut();
+  if(error){
+    alert(error.message);
+    return;
+  }
+  window.location.href="auth.html";
+});
+
+loadDashboard();
+</script>
+</body>
+</html>
