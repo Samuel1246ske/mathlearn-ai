@@ -190,30 +190,6 @@ async function saveQuizAttempt(finalScore) {
   if (error) throw error;
 }
 
-const lessonClient = window.supabase
-  ? window.supabase.createClient(LESSONS_URL, LESSONS_KEY)
-  : null;
-
-  const { data: { user }, error: userError } =
-    await client.auth.getUser();
-
-  if (userError) throw userError;
-
-  if (!user) {
-    throw new Error("Please log in to save your quiz score.");
-  }
-
-  const { error } = await client
-    .from("quiz_attempts")
-    .insert({
-      student_id: user.id,
-      score: finalScore,
-      total_questions: questions.length
-    });
-
-  if (error) throw error;
-}
-
 function drawQuiz() {
   if (!qTitle) return;
 
