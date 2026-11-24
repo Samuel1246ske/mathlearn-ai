@@ -189,9 +189,6 @@ async function saveQuizAttempt(finalScore) {
 
   if (error) throw error;
 }
-  const SUPABASE_URL = "https://cnqjpzjdhascrjouzynu.supabase.co";
-
-  const SUPABASE_KEY = "sb_publishable_34w3u5w8U6IgNJlFZGRL8A_UHAdNEXD";
 
 const lessonClient = window.supabase
   ? window.supabase.createClient(LESSONS_URL, LESSONS_KEY)
