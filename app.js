@@ -60,20 +60,27 @@ async function renderLessons() {
       const completed = completedIds.includes(lesson.id);
 
       return `
-        <article class="lesson-card">
-          <span class="lesson-symbol">📘</span>
-          <h3>${lesson.title}</h3>
-          <p><strong>${lesson.topic}</strong></p>
-          <p>${lesson.content}</p>
-          <button
-            class="lesson-complete-btn"
-            data-lesson-id="${lesson.id}"
-            ${completed ? "disabled" : ""}
-            style="margin-top:15px;padding:10px 15px;border:0;border-radius:9px;background:${completed ? "#d9f5e5" : "#6845d5"};color:${completed ? "#176b3a" : "white"};cursor:pointer;">
-            ${completed ? "✓ Completed" : "Mark as completed"}
-          </button>
-        </article>
-      `;
+  <article class="lesson-card">
+    <span class="lesson-symbol">📘</span>
+
+    <h3>${lesson.title}</h3>
+
+    <p><strong>${lesson.topic}</strong></p>
+
+    <p>${lesson.content || "Explore this Mathematics topic."}</p>
+
+    <p style="color:${completed ? "#176b3a" : "#6845d5"};font-weight:700;">
+      ${completed ? "✓ Completed" : "Ready to learn"}
+    </p>
+
+    <a
+      href="lesson.html?id=${encodeURIComponent(lesson.id)}"
+      class="btn primary"
+      style="display:inline-block;margin-top:12px;text-decoration:none;">
+      ${completed ? "Review Lesson →" : "Start Lesson →"}
+    </a>
+  </article>
+`;
     }).join("");
 
   } catch (error) {
