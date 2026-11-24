@@ -171,10 +171,9 @@ async function saveQuizAttempt(finalScore) {
 
   const SUPABASE_KEY = "sb_publishable_34w3u5w8U6IgNJlFZGRL8A_UHAdNEXD";
 
-  const client = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
-  );
+const lessonClient = window.supabase
+  ? window.supabase.createClient(LESSONS_URL, LESSONS_KEY)
+  : null;
 
   const { data: { user }, error: userError } =
     await client.auth.getUser();
