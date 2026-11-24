@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Study Lesson | MathLearn AI</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f7f6fc;color:#25213b;font-family:'DM Sans',sans-serif}
+header{background:white;padding:18px 7%;display:flex;justify-content:space-between;align-items:center;box-shadow:0 3px 15px #17102a0c}
+.logo{font-size:22px;font-weight:800;color:#6845d5;text-decoration:none}
+header a.back{color:#6845d5;text-decoration:none;font-weight:700}
+main{max-width:900px;margin:40px auto;padding:0 20px}
+.hero{background:linear-gradient(120deg,#6845d5,#9677ed);color:white;padding:35px;border-radius:22px}
+.hero small{opacity:.8;font-weight:700}
+h1{font-family:'Space Grotesk',sans-serif;font-size:36px;margin:12px 0}
+.card{background:white;padding:28px;margin-top:22px;border-radius:18px;box-shadow:0 5px 25px #24144b0b}
+h2{color:#6845d5;margin-top:0}
+p,li{line-height:1.8;color:#55516a}
+.example{background:#f3efff;padding:18px;border-radius:12px;white-space:pre-line;line-height:1.8}
+.question{padding:18px 0;border-bottom:1px solid #eee}
+.option{display:block;width:100%;text-align:left;padding:13px;margin:9px 0;border:1px solid #ddd;border-radius:10px;background:white;cursor:pointer;font:inherit}
+.option:hover{border-color:#6845d5;background:#f8f5ff}
+.option.correct{background:#dcf8e7;border-color:#31a76b}
+.option.wrong{background:#ffe5e5;border-color:#e66}
+button.action{background:#6845d5;color:white;border:0;padding:15px 22px;border-radius:11px;font-weight:700;cursor:pointer;margin-top:15px}
+button:disabled{opacity:.6;cursor:not-allowed}
+#message{margin-top:15px;font-weight:700}
+@media(max-width:600px){h1{font-size:27px}.hero,.card{padding:22px}}
+</style>
+</head>
+
+<body>
+
+<header>
+<a class="logo" href="index.html">∑ MathLearn AI</a>
+<a class="back" href="lessons.html">← Back to lessons</a>
+</header>
+
+<main>
+<div class="hero">
+<small id="className">MATHEMATICS LESSON</small>
+<h1 id="lessonTitle">Loading lesson...</h1>
+<p id="lessonTopic" style="color:white"></p>
+</div>
+
+<section class="card">
+<h2>🎯 Learning Objectives</h2>
+<div id="objectives">Loading...</div>
+</section>
+
+<section class="card">
+<h2>📖 Introduction and Explanation</h2>
+<div id="explanation"></div>
+</section>
+
+<section class="card">
+<h2>✍️ Worked Examples</h2>
+<div id="examples" class="example"></div>
+</section>
+
+<section class="card">
+<h2>🧠 Test Your Understanding</h2>
+<div id="questions">Loading questions...</div>
+<p id="quizResult"></p>
+</section>
+
+<section class="card">
+<h2>🏆 Complete Your Lesson</h2>
+<p>After studying this topic and attempting the questions, mark this lesson as completed.</p>
+<button class="action" id="completeBtn">Mark as completed</button>
+<div id="message"></div>
+</section>
+</main>
+
+<script>
+const SUPABASE_URL = "https://cnqjpzjdhascrjouzynu.supabase.co";
+const SUPABASE_KEY = "sb_publishable_34w3u5w8U6IgNJlFZGRL8A_UHAdNEXD";
+
+const db = window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+const lessonId = new URLSearchParams(location.search).get("id");
+
+let currentUser = null;
+
+function safeText(value){
+ return String(value || "").replace(/[&<>"']/g, char => ({
+  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+ }[char]));
+}
+
+function showText(id,value){
+ document.getElementById(id).innerHTML =
+ safeText(value).replace(/\n/g,"<br>");
+}
+
+async function loadLesson(){
+
+ if(!lessonId){
+  document.getElementById("lessonTitle").textContent="Lesson not found";
+  return;
+ }
+
+ const {data:lesson,error} = await db
+ .from("lessons")
+ .select("*")
+ .eq("id",lessonId)
+ .eq("published",true)
+ .single();
+
+ if(error){
+  document.getElementById("lessonTitle").textContent="Unable to load lesson";
+  document.getElementById("lessonTopic").textContent=error.message;
+  return;
+ }
+
+ document.title=lesson.title+" | MathLearn AI";
+
+ document.getElementById("lessonTitle").textContent=lesson.title;
+ document.getElementById("lessonTopic").textContent=lesson.topic || "";
+ document.getElementById("className").textContent=lesson.class_level+" MATHEMATICS";
+
+ showText("objectives",lesson.objectives || "Objectives coming soon.");
+ showText("explanation",lesson.explanation || lesson.content || "Lesson explanation coming soon.");
+ showText("examples",lesson.examples || "Worked examples coming soon.");
+
+ displayQuestions(lesson.practice_questions || []);
+
+ const {data:{user}}=await db.auth.getUser();
+ currentUser=user;
+
+ if(user){
+  const {data:progress}=await db
+   .from("learning_progress")
+   .select("completed")
+   .eq("student_id",user.id)
+   .eq("lesson_id",lessonId)
+   .maybeSingle();
+
+  if(progress && progress.completed){
+   const btn=document.getElementById("completeBtn");
+   btn.textContent="✓ Lesson Completed";
+   btn.disabled=true;
+  }
+ }
+}
+
+function displayQuestions(questions){
+
+ const container=document.getElementById("questions");
+
+ if(!questions.length){
+  container.textContent="Practice questions coming soon.";
+  return;
+ }
+
+ container.innerHTML=questions.map((q,index)=>`
+  <div class="question">
+   <strong>${index+1}. ${safeText(q.question)}</strong>
+   ${q.options.map((option,i)=>`
+    <button class="option" data-question="${index}" data-option="${i}">
+     ${String.fromCharCode(65+i)}. ${safeText(option)}
+    </button>
+   `).join("")}
+   <p id="feedback${index}"></p>
+  </div>
+ `).join("");
+
+ container.querySelectorAll(".option").forEach(button=>{
+  button.addEventListener("click",()=>{
+   const qIndex=Number(button.dataset.question);
+   const selected=Number(button.dataset.option);
+   const q=questions[qIndex];
+   const buttons=container.querySelectorAll(
+    `[data-question="${qIndex}"]`
+   );
+
+   if(buttons[0].disabled)return;
+
+   buttons.forEach(b=>b.disabled=true);
+
+   if(selected===Number(q.answer)){
+    button.classList.add("correct");
+    document.getElementById("feedback"+qIndex).textContent=
+     "Correct! "+(q.explanation || "Well done!");
+   }else{
+    button.classList.add("wrong");
+    buttons[Number(q.answer)].classList.add("correct");
+    document.getElementById("feedback"+qIndex).textContent=
+     "Not quite. "+(q.explanation || "Review the lesson and try again.");
+   }
+  });
+ });
+}
+
+document.getElementById("completeBtn").addEventListener("click",async()=>{
+
+ const message=document.getElementById("message");
+ const btn=document.getElementById("completeBtn");
+
+ const {data:{user},error:authError}=await db.auth.getUser();
+
+ if(authError){
+  message.textContent=authError.message;
+  return;
+ }
+
+ if(!user){
+  alert("Please log in to save your progress.");
+  location.href="auth.html";
+  return;
+ }
+
+ btn.disabled=true;
+ btn.textContent="Saving...";
+
+ const {error}=await db.from("learning_progress").upsert({
+  student_id:user.id,
+  lesson_id:lessonId,
+  completed:true,
+  updated_at:new Date().toISOString()
+ },{onConflict:"student_id,lesson_id"});
+
+ if(error){
+  message.textContent="Could not save: "+error.message;
+  btn.disabled=false;
+  btn.textContent="Mark as completed";
+  return;
+ }
+
+ btn.textContent="✓ Lesson Completed";
+ message.textContent="Congratulations! Your learning progress has been saved.";
+});
+
+loadLesson();
+</script>
+
+</body>
+</html>
